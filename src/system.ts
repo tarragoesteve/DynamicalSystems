@@ -6,6 +6,8 @@ import * as SVG from 'svg.js';
       private parameters: {};
       private equations: string;
       private domain: [number, number][];
+      private width = 500
+      private height = 500
 
       public constructor(equations: string,domain: [number, number][] ,parameters:string)
       {
@@ -26,10 +28,11 @@ import * as SVG from 'svg.js';
         this.parameters = JSON.parse(parameters)
       }
 
-      getNextNStates(point: number[], n:number) : number[][]
+      getNextTrajectory(point: number[], n:number) : number[][]
       {
         let result = [];
         let previous = point;
+        result.push(point);
         for (let i = 0; i < n; i++) {
           let nextPoint = this.getNextState(previous)
           result.push(nextPoint);
@@ -77,10 +80,29 @@ import * as SVG from 'svg.js';
         return mysolver.getSolutions()
       }
 
+      private changeReferenceToDrawing(point:number[]) : number[]
+      {
+        let x = (point[0] - this.domain[0][0]) / (this.domain[0][1]-this.domain[0][0]) * this.width
+        let y = (point[1] - this.domain[1][0]) / (this.domain[1][1]-this.domain[1][0]) * this.height
+        return [x,y]
+      }
+
       public getDrawing(): any
       {
-        var draw = SVG('drawing').size(300, 300)
-        var rect = draw.rect(100, 100).attr({ fill: '#f06' })
-        return rect
+        var draw = SVG('drawing').size(this.width, this.height)
+        let rp = this.getRandomPoints(500)
+        for (let pointIt in rp){
+          let point = rp[pointIt]
+          let trajectory = this.getNextTrajectory(point, 10)
+          let drawPoint = this.changeReferenceToDrawing(point)
+          //draw.circle(10).fill('#f06').move(drawPoint[0], drawPoint[1])
+          let trajectoryDraw = []
+          for(let pointTraIt in trajectory){
+            trajectoryDraw.push(this.changeReferenceToDrawing(trajectory[pointTraIt]))
+          }
+          draw.polyline(trajectoryDraw).fill('none').stroke({ width: 1 })
+        }
+
+
       }
   }
