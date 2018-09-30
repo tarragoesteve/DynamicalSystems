@@ -15,6 +15,7 @@
   "bugs": {
     "url": "https://github.com/tarragoesteve/DynamicalSystems/issues"
   },
+  "browser": "bundler",
   "homepage": "https://github.com/tarragoesteve/DynamicalSystems#readme",
   "devDependencies": {
     "ts-loader": "^5.2.1",
