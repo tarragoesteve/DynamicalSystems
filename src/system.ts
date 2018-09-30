@@ -1,6 +1,6 @@
 import {Solver} from "./solver";
 import * as Mathjs from 'mathjs';
-//import * as SVG from 'svg';
+import * as SVG from 'svg.js';
 
   export class System {
       private parameters: {};
@@ -79,8 +79,8 @@ import * as Mathjs from 'mathjs';
 
       public getDrawing(): any
       {
-  /*      var draw = SVG('drawing').size(300, 300)
+        var draw = SVG('drawing').size(300, 300)
         var rect = draw.rect(100, 100).attr({ fill: '#f06' })
-        return rect*/
+        return rect
       }
   }
