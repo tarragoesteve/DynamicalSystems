@@ -6,8 +6,15 @@ import * as SVG from 'svg.js';
       private parameters: {};
       private equations: string;
       private domain: [number, number][];
+
+      //constants
       private width = 500
       private height = 500
+      private number_of_seeds = 250
+      private number_of_iterations = 100
+
+      //drawing
+      private drawing = SVG('drawing').size(this.width, this.height)
 
       public constructor(equations: string,domain: [number, number][] ,parameters:string)
       {
@@ -17,18 +24,20 @@ import * as SVG from 'svg.js';
       }
 
       //Given X we compute F(X) where F is defined in the equations
-      getNextState(point: number[]): number[]
+      private getNextState(point: number[]): number[]
       {
         var fnc = new Function ('parameters', 'input', this.equations)
         return fnc(this.parameters, point)
       }
 
-      setParameters(parameters:string): void
+      //change de parameter of the function
+      public setParameters(parameters:string): void
       {
         this.parameters = JSON.parse(parameters)
       }
 
-      getNextTrajectory(point: number[], n:number) : number[][]
+      //compute the trajectory of the point using F(X) iteratively
+      private getTrajectory(point: number[], n:number) : number[][]
       {
         let result = [];
         let previous = point;
@@ -41,7 +50,7 @@ import * as SVG from 'svg.js';
         return result;
       }
 
-      getPointInDomain() : number[]
+      private getPointInDomain() : number[]
       {
         let point = []
         for (let dimensionIt in this.domain) {
@@ -53,7 +62,7 @@ import * as SVG from 'svg.js';
         return point;
       }
 
-      getRandomPoints (n: number) : number[][]
+      private getRandomPoints (n: number) : number[][]
       {
         let result = []
         for (let i = 0; i < n; i++) {
@@ -63,17 +72,21 @@ import * as SVG from 'svg.js';
       }
 
       //X = F^k(X) => F^k(X)-X == 0
-      getKPeriodicPoints(k: number) : number[][]
+      private getKPeriodicPoints(k: number) : number[][]
       {
-        var equations_function = new Function ('parameters', 'input', this.equations)
+        let equations_function = new Function ('parameters', 'input', this.equations)
 
-        var zero_function = function (X:number) {
-          let aux_point = X;
+        let zero_function = function (X: number[]) : number {
+          let aux_point : number [] = X;
           for (let i = 0; i < k; i++) {
             aux_point = equations_function(this.parameters, aux_point)
           }
           //aux_point now contains F^K(X)
-          return Mathjs.norm(aux_point - X)
+          let modul = 0;
+          for (let i = 0; i < X.length; i++) {
+              modul += Math.abs(X[i]-aux_point[i]);
+          }
+          return modul
         }
 
         let mysolver = new Solver(zero_function, this.domain)
@@ -87,22 +100,28 @@ import * as SVG from 'svg.js';
         return [x,y]
       }
 
-      public getDrawing(): any
+      public voidOrbitDraw(): any
       {
-        var draw = SVG('drawing').size(this.width, this.height)
-        let rp = this.getRandomPoints(500)
+        let rp = this.getRandomPoints(this.number_of_seeds)
         for (let pointIt in rp){
           let point = rp[pointIt]
-          let trajectory = this.getNextTrajectory(point, 10)
-          let drawPoint = this.changeReferenceToDrawing(point)
-          //draw.circle(10).fill('#f06').move(drawPoint[0], drawPoint[1])
-          let trajectoryDraw = []
+          let trajectory = this.getTrajectory(point, this.number_of_iterations)
           for(let pointTraIt in trajectory){
-            trajectoryDraw.push(this.changeReferenceToDrawing(trajectory[pointTraIt]))
+            let [x, y] = this.changeReferenceToDrawing(trajectory[pointTraIt])
+            this.drawing.circle(1).fill('#f06').move(x, y)
           }
-          draw.polyline(trajectoryDraw).fill('none').stroke({ width: 1 })
         }
+      }
 
+      public voidKPeriodDraw(k :number){
+        let points = this.getKPeriodicPoints(k)
+        console.log('Periodic points of k' + k + ': ' + points)
+        for(let key in points){
+          let [x, y] = this.changeReferenceToDrawing(points[key])
+          this.drawing.circle(10).fill('#f06').move(x, y)
+        }
+      }
 
+      public voidClearDraw(k :number){
       }
   }
