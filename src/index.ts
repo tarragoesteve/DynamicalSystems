@@ -10,5 +10,7 @@ let mySystem = new System.System(`
   return [x,y];
 `,[[-Math.PI,Math.PI],[-Math.PI,Math.PI]],
 '{"a":-0.7}');
-mySystem.voidOrbitDraw()
-//mySystem.voidKPeriodDraw(4)
+mySystem.voidOrbitDraw('#f06')
+mySystem.voidKPeriodDraw(4, '#00f')
+mySystem.voidKPeriodDraw(3, '#0f0')
+mySystem.voidKPeriodDraw(2, '#f2f40b')

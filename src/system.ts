@@ -1,5 +1,4 @@
 import {Solver} from "./solver";
-import * as Mathjs from 'mathjs';
 import * as SVG from 'svg.js';
 
   export class System {
@@ -8,8 +7,8 @@ import * as SVG from 'svg.js';
       private domain: [number, number][];
 
       //constants
-      private width = 500
-      private height = 500
+      private width = 800
+      private height = 800
       private number_of_seeds = 250
       private number_of_iterations = 100
 
@@ -89,7 +88,7 @@ import * as SVG from 'svg.js';
           return modul
         }
 
-        let mysolver = new Solver(zero_function, this.domain)
+        let mysolver = new Solver(zero_function, this.domain, this.parameters)
         return mysolver.getSolutions()
       }
 
@@ -97,28 +96,28 @@ import * as SVG from 'svg.js';
       {
         let x = (point[0] - this.domain[0][0]) / (this.domain[0][1]-this.domain[0][0]) * this.width
         let y = (point[1] - this.domain[1][0]) / (this.domain[1][1]-this.domain[1][0]) * this.height
+        y = this.height - y
         return [x,y]
       }
 
-      public voidOrbitDraw(): any
+      public voidOrbitDraw(color: string): any
       {
         let rp = this.getRandomPoints(this.number_of_seeds)
-        for (let pointIt in rp){
-          let point = rp[pointIt]
+        for (let point of rp){
           let trajectory = this.getTrajectory(point, this.number_of_iterations)
-          for(let pointTraIt in trajectory){
-            let [x, y] = this.changeReferenceToDrawing(trajectory[pointTraIt])
-            this.drawing.circle(1).fill('#f06').move(x, y)
+          for(let pointTra of trajectory){
+            let [x, y] = this.changeReferenceToDrawing(pointTra)
+            this.drawing.circle(1).fill(color).move(x, y)
           }
         }
       }
 
-      public voidKPeriodDraw(k :number){
+      public voidKPeriodDraw(k :number, color: string){
         let points = this.getKPeriodicPoints(k)
-        console.log('Periodic points of k' + k + ': ' + points)
-        for(let key in points){
-          let [x, y] = this.changeReferenceToDrawing(points[key])
-          this.drawing.circle(10).fill('#f06').move(x, y)
+        console.log('Periodic points of k=' + k + ': ' + points)
+        for(let point of points){
+          let [x, y] = this.changeReferenceToDrawing(point)
+          this.drawing.circle(5).fill(color).move(x, y)
         }
       }
 

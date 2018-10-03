@@ -1,14 +1,27 @@
 export class Solver {
   private function: (X: number[]) => number
   private domain: [number, number][]
-  private epsilon = 10E-6
-  private minimul_step = 10E-6
-  private initial_step = 10E-6
-  private number_of_seeds = 1000
+  private parameters: {};
+  // constants
+  private epsilon = 10E-4
+  private minimal_step = 10E-12
+  private initial_step = 10E-2
+  private number_of_seeds = 10E3
 
-  constructor(zero_function: (X: number[]) => number, domain: [number, number][]){
+  constructor(zero_function: (X: number[]) => number, domain: [number, number][], parameters:any){
     this.function = zero_function;
     this.domain = domain;
+    this.parameters = parameters
+
+  }
+
+  private isPointInDomain(x: number[]): boolean
+  {
+    for (let i = 0; i < x.length; i++) {
+        if(x[i] < this.domain[i][0]) return false
+        if(x[i] > this.domain[i][1]) return false
+    }
+    return true
   }
 
   private getPointInDomain() : number[]
@@ -38,10 +51,14 @@ export class Solver {
     for (let i = 0; i < point.length; i++) {
         let aux_point = point
         aux_point[i] += step
-        neighbours.push(aux_point)
+        if(this.isPointInDomain(aux_point)){
+          neighbours.push(JSON.parse(JSON.stringify(aux_point)))
+        }
         aux_point = point
         aux_point[i] -= step
-        neighbours.push(aux_point)
+        if(this.isPointInDomain(aux_point)){
+          neighbours.push(JSON.parse(JSON.stringify(aux_point)))
+        }
     }
     return neighbours
   }
@@ -52,14 +69,16 @@ export class Solver {
     let point = seed
     let improvable = true;
     let step = this.initial_step;
-    while (this.function(point) < this.epsilon
-    && (improvable || step < this.initial_step)) {
+    let steps = 0
+    while (this.function(point) > this.epsilon
+    && (improvable || step > this.minimal_step) && steps < 100) {
+      /*console.log("Point: ", point, " function:", this.function(point),
+        " step:", step)*/
       let neighbours = this.getNeighbours(point,step)
       let best_value = this.function(point)
       let best_neighbour = point
       improvable = false
-      for (let key in neighbours) {
-        let neighbour = neighbours[key];
+      for (let neighbour of neighbours) {
         if(this.function(neighbour) < best_value)
         {
           improvable = true;
@@ -68,7 +87,10 @@ export class Solver {
         }
       }
       point = best_neighbour
-      step = step/2
+      if(! improvable){
+        step = step/2
+      }
+      ++steps
     }
     return [this.function(point) < this.epsilon, point]
   }
@@ -79,8 +101,10 @@ export class Solver {
     let seeds = this.getRandomPoints(this.number_of_seeds)
     let solutions = []
     for (let key in seeds) {
+      if (parseInt(key) % 100 == 0) console.log(key)
       let seed = seeds[key]
       let [found, zero] = this.findZero(seed)
+      if (found) console.log(zero, this.function(zero))
       if (found) solutions.push(zero)
     }
     return solutions
